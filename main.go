@@ -9,7 +9,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-const TG_APITOKEN string = "7665990035:AAGlASO0rHDX3RhgDfcwmJNxAJOFsupO3Dc"
+const TG_APITOKEN string = ""
 
 var coh2Maps = map[int]string{
 	1:  "Eindhoven Country",
