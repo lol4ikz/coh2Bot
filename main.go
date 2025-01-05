@@ -31,7 +31,7 @@ func getRandomMap() int {
 	// Set the time as a seed value
 	rand.Seed(time.Now().UnixNano())
 
-	return rand.Intn(12) + 1
+	return rand.Intn(13) + 1
 
 }
 
