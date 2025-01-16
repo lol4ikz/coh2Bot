@@ -151,6 +151,7 @@ func main() {
 				if err == nil {
 					msg.Text = "✅ Команды добавлены"
 				} else {
+					log.Panic(err)
 					msg.Text = "❌ Список команд полон или неправильный ввод"
 				}
 				subCmd = rootCommand
@@ -159,7 +160,7 @@ func main() {
 				if err == nil {
 					msg.Text = "✅ Счет добавлен"
 				} else {
-					log.Printf("%v\n", err)
+					log.Panic("%v\n", err)
 					msg.Text = "❌ Проверьте ввод"
 				}
 				subCmd = rootCommand
@@ -175,7 +176,7 @@ func main() {
 					break
 				}
 				if err = newDb.CreateNewTables(); err != nil {
-					log.Panic("Cant create tables")
+					log.Panicf("Cant create tables: %v", err)
 					msg.Text = "❌ Не удалось создать турнир"
 				} else {
 					msg.Text = "✅ Все результаты обнулены начат новый турнир"
@@ -196,7 +197,7 @@ func main() {
 			case "sum":
 				total1, total2, err := newDb.GetTotalScores()
 				if err != nil {
-					log.Printf("%v\n", err)
+					log.Panicf("%v\n", err)
 					msg.Text = "Нет результатов, или произошла ошибка"
 				} else {
 					msg.Text = fmt.Sprintf("Первая команда: %d\nВторая команда: %d", total1, total2)
@@ -204,7 +205,7 @@ func main() {
 			case "last":
 				pdfBuffer, err := getPdf(newDb)
 				if err != nil {
-					log.Printf("%v\n", err)
+					log.Panicf("%v\n", err)
 					continue
 				}
 				// preparing a file to the upload
@@ -220,7 +221,7 @@ func main() {
 				continue
 			default:
 				msg.Text = "===Доступные команды==\n" +
-					"/new 	- Удалить все результаты и начать заново"+          
+					"/new 	- Удалить все результаты и начать заново\n"+                   
 					"/rand 	- Выбрать карту\n"+             
 					"/teams - Добавить команды\n"+                
 					"/match - Добавить статистику матча\n"+                        
