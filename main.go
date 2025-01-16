@@ -187,8 +187,8 @@ func main() {
 				msg.Text = "Введите имена двух команд разделенные пробелами"
 				subCmd = teamsCommand
 			case "match":
-				if lastRandomMap == "" {
-					msg.Text = "❌ Сначала выберите карту"
+				if newDb.TeamsTableIsEmpty() || lastRandomMap == "" {
+					msg.Text = "❌ Добавьте команды и/или выберите карты"
 					break
 				}
 				msg.Text = "Введите счет через тире \"2-0\""
@@ -220,7 +220,7 @@ func main() {
 				continue
 			default:
 				msg.Text = "===Доступные команды==\n" +
-					"/new 	- Удалить все результаты и начать заново"+        
+					"/new 	- Удалить все результаты и начать заново"+          
 					"/rand 	- Выбрать карту\n"+             
 					"/teams - Добавить команды\n"+                
 					"/match - Добавить статистику матча\n"+                        

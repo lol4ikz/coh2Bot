@@ -57,7 +57,7 @@ func (db *Database) CreateNewTables() error {
 // inserting just 2 teams, if teams not exists in table
 func (db *Database) NewTeams(teamsStr string) error {
 	var teamCounts int
-	err := db.conn.QueryRow("SELECT COUNT (*) FROM teams").Scan(&teamCounts)
+	err := db.conn.QueryRow("SELECT COUNT (*) FROM teams LIMIT 1").Scan(&teamCounts)
 	if teamCounts > 0 {
 		return fmt.Errorf("Cant add teams")
 	}
@@ -79,6 +79,15 @@ func (db *Database) NewTeams(teamsStr string) error {
 		}
 	}
 	return nil
+}
+
+func (db *Database) TeamsTableIsEmpty() bool {
+	var count int
+	err := db.conn.QueryRow("SELECT COUNT (*) FROM teams LIMIT 1").Scan(&count)
+	if err != nil {
+		return false
+	}
+	return count == 0
 }
 
 func (db *Database) NewMatch(newMap string, score string) error {
