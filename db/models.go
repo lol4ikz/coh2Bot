@@ -14,12 +14,13 @@ type Match struct {
 
 type Matches []Match
 
+// type Match implements an interface Stringer
 func (m *Match) String() string {
-	return fmt.Sprintf("%-3d | %-25s | %-10s | %-10s | %-8d | %-8d | %-10s\n", m.ID, m.MAP, m.TEAM1, m.TEAM2, m.SCORE1, m.SCORE2, m.DATE)
+	return fmt.Sprintf("%-30s | %-8d | %-8d | %-10s\n", m.MAP, m.SCORE1, m.SCORE2, m.DATE)
 }
 
 func (ms Matches) String() string {
-	res := ""
+	res := "*Game Scores*\n| Map                     | Team2  | Team1 | Date       |\n|--------------------------------|--------|------|------------|\n"
 	for _, m := range ms {
 		res += m.String()
 	}

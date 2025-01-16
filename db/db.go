@@ -10,7 +10,7 @@ import (
 )
 
 type Database struct {
-	Conn *sql.DB
+	conn *sql.DB
 }
 
 // initializing new db instance
@@ -19,11 +19,15 @@ func NewDatabase(name string) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Database{Conn: db}, nil
+	return &Database{conn: db}, nil
 }
 
+// creating tables
 func (db *Database) CreateNewTables() error {
 	sqlStmt := []string{
+		`DROP TABLE IF EXISTS teams;`,
+		`DROP TABLE IF EXISTS matches;`,
+		`DROP TABLE IF EXISTS scores;`,
 		`CREATE TABLE IF NOT EXISTS teams(team_id INTEGER PRIMARY KEY AUTOINCREMENT, team_name TEXT NOT NULL);`,
 		`CREATE TABLE IF NOT EXISTS matches(
 			match_id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -42,18 +46,18 @@ func (db *Database) CreateNewTables() error {
 		);`,
 	}
 	for _, stmt := range sqlStmt {
-		_, err := db.Conn.Exec(stmt)
+		_, err := db.conn.Exec(stmt)
 		if err != nil {
-			//return err
 			return fmt.Errorf("failed to execute statement %q: %w", stmt, err)
 		}
 	}
 	return nil
 }
 
+// inserting just 2 teams, if teams not exists in table
 func (db *Database) NewTeams(teamsStr string) error {
 	var teamCounts int
-	err := db.Conn.QueryRow("SELECT COUNT (*) FROM teams").Scan(&teamCounts)
+	err := db.conn.QueryRow("SELECT COUNT (*) FROM teams").Scan(&teamCounts)
 	if teamCounts > 0 {
 		return fmt.Errorf("Cant add teams")
 	}
@@ -62,7 +66,7 @@ func (db *Database) NewTeams(teamsStr string) error {
 		return fmt.Errorf("Teams should be a 2 values")
 	}
 	// Prepare the sql stmt
-	stmt, err := db.Conn.Prepare("INSERT INTO teams (team_name) VALUES (?);")
+	stmt, err := db.conn.Prepare("INSERT INTO teams (team_name) VALUES (?);")
 	if err != nil {
 		return err
 	}
@@ -83,7 +87,7 @@ func (db *Database) NewMatch(newMap string, score string) error {
 		return fmt.Errorf("Scores should be 2 values")
 	}
 	// inserting a new match
-	res, err := db.Conn.Exec("INSERT INTO matches (map) VALUES (?)", newMap)
+	res, err := db.conn.Exec("INSERT INTO matches (map) VALUES (?)", newMap)
 	if err != nil {
 		return err
 	}
@@ -97,12 +101,12 @@ func (db *Database) NewMatch(newMap string, score string) error {
 	for i, s := range scores {
 		scoreInt, err := strconv.Atoi(s)
 		if err != nil {
-			return err
+			return fmt.Errorf("Scores should be a digit")
 		}
 		intScores[i] = scoreInt
 	}
 	// inserting a scores
-	res, err = db.Conn.Exec("INSERT INTO scores (score_id, team1_score, team2_score) VALUES (?,?,?)", matchId, intScores[0], intScores[1])
+	res, err = db.conn.Exec("INSERT INTO scores (score_id, team1_score, team2_score) VALUES (?,?,?)", matchId, intScores[0], intScores[1])
 	if err != nil {
 		return err
 	}
@@ -111,7 +115,7 @@ func (db *Database) NewMatch(newMap string, score string) error {
 
 // getting a 10 last matches stats
 func (db *Database) GetLastMatches() (Matches, error) {
-	rows, err := db.Conn.Query(`SELECT m.match_id, m.map, t1.team_name AS TEAM1, t2.team_name AS TEAM2, s.team1_score, s.team2_score, m.date 
+	rows, err := db.conn.Query(`SELECT m.match_id, m.map, t1.team_name AS TEAM1, t2.team_name AS TEAM2, s.team1_score, s.team2_score, m.date 
 								FROM matches m 
 								JOIN teams t1 ON m.team1_id = t1.team_id
 								JOIN teams t2 ON m.team2_id = t2.team_id
@@ -123,7 +127,7 @@ func (db *Database) GetLastMatches() (Matches, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var matches []Match
+	var matches Matches
 	for rows.Next() {
 		var match Match
 		err = rows.Scan(
@@ -148,10 +152,14 @@ func (db *Database) GetLastMatches() (Matches, error) {
 
 func (db *Database) GetTotalScores() (int, int, error) {
 	var total1, total2 int
-	err := db.Conn.QueryRow(`SELECT SUM(team1_score), SUM(team2_score) FROM scores;`).Scan(&total1, &total2)
+	err := db.conn.QueryRow(`SELECT SUM(team1_score), SUM(team2_score) FROM scores;`).Scan(&total1, &total2)
 	if err != nil {
 		return 0, 0, err
 	}
 
 	return total1, total2, nil
+}
+
+func (db *Database) Close() error {
+	return db.conn.Close()
 }
