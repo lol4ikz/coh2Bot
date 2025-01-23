@@ -215,13 +215,10 @@ func main() {
 				}
 				doc.BaseFile.File = file
 				doc.Caption = "Результаты последних 10 игр"
-				if _, err := bot.Send(doc); err != nil {
-					log.Printf("%v", err)
-				}
 				continue
 			default:
 				msg.Text = "===Доступные команды==\n" +
-					"/new 	- Удалить все результаты и начать заново\n"+                       
+					"/new 	- Удалить все результаты и начать заново\n"+                        
 					"/rand 	- Выбрать карту\n"+             
 					"/teams - Добавить команды\n"+                
 					"/match - Добавить статистику матча\n"+                        
